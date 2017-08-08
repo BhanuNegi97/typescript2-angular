@@ -1,0 +1,40 @@
+// {
+//     "files": [
+//         "src/main.ts",
+//         "src/greet.ts"
+//     ],
+//     "compilerOptions": {
+//         "noImplicitAny": true,
+//         "target": "es5"
+//     }
+// }
+
+
+// {
+//     "files": [
+//         "app/scripts/**/*.ts"
+//     ],
+//     "compilerOptions": {
+//         "noImplicitAny": true,
+//         "target": "es2015"
+//     }
+// }
+
+{
+  "compilerOptions": {
+    "outDir": "dist", // <--- newly added configuration parameter
+    "target":"es5",
+    "module": "amd",
+    "declaration": false,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "removeComments": false,
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
