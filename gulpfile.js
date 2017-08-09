@@ -13,6 +13,9 @@ var typescript = require('gulp-typescript');
 var template = require('gulp-template-compile'); // to compile and generate template
 var clean1 = require('gulp-rimraf');
 var cssmin = require('gulp-cssmin');
+var jsonTransform = require('gulp-json-transform');
+var scss = require("gulp-scss");
+var sass = require('gulp-sass');
 
 
 //var tscConfig = require(tsconfig.json);
@@ -30,7 +33,9 @@ var paths = {
     scripts: ['scripts/**/*.ts', '!service/**/*.ts'],
     service: ['service/**/*.ts'],
     images: ['images/**/*.png'],
-    styles: ['styles/**/*.css'],
+    styles: ['css/**/*.scss'],
+    utility: ['utlity/**/*.json'],
+    bower: ['bower_components/**/*.js','bower_components/dist/**/*.js']
 };
 gulp.task('clean', [], function () {
     console.log("Clean all files in build folder");
@@ -93,10 +98,23 @@ gulp.task('cssmin', ['clean'], function () {
     gulp.src(paths.styles, {
             cwd: bases.app
         })
+        .pipe(sass())
         .pipe(cssmin())
         .pipe(gulp.dest(bases.dist + 'styles/'));
 });
 
+gulp.task('utility',['clean'], function() {
+    gulp.src(paths.utility,  {cwd: bases.app})
+    .pipe(jsonTransform(function(data, file) {
+        return data;
+    }))
+    .pipe(gulp.dest(bases.dist + 'utility/'));
+});
+
+gulp.task('bower',['clean'], function() {
+    gulp.src(paths.bower,  {cwd: bases.app})
+    .pipe(gulp.dest(bases.dist + 'bower_components/'));
+});
 gulp.task('LocalDeploy', ['clean',
-    'scripts', 'service', 'pages', 'mainpages', 'imagemin', 'cssmin'
+    'scripts', 'service', 'pages', 'mainpages', 'imagemin', 'cssmin','utility','bower'
 ]);
