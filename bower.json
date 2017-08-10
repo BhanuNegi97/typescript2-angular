@@ -4,7 +4,8 @@
   "dependencies": {
     "bootstrap-sass": "*",
     "bootstrap": "*",
-    "components-font-awesome": "^4.7.0"
+    "components-font-awesome": "^4.7.0",
+    "localization-i18next":"https://github.com/jamuhl/i18next.git"
   },
   "devDependencies": {}
 }

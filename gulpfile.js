@@ -14,9 +14,8 @@ var template = require('gulp-template-compile'); // to compile and generate temp
 var clean1 = require('gulp-rimraf');
 var cssmin = require('gulp-cssmin');
 var jsonTransform = require('gulp-json-transform');
-var scss = require("gulp-scss");
 var sass = require('gulp-sass');
-
+var browserSync = require('browser-sync').create();
 
 //var tscConfig = require(tsconfig.json);
 
@@ -30,12 +29,12 @@ var bases = {
 var paths = {
     pages: ['views/**/*.html', '!index.html', '!404.html'],
     mainpage: ['**/*.html', '!views/**/*.html'],
-    scripts: ['scripts/**/*.ts', '!service/**/*.ts'],
+    scripts: ['scripts/**/*.ts', '!service/**/*.ts','typings/tsd.d.ts'],
     service: ['service/**/*.ts'],
     images: ['images/**/*.png'],
     styles: ['css/**/*.scss'],
     utility: ['utlity/**/*.json'],
-    bower: ['bower_components/**/*.js','bower_components/dist/**/*.js']
+    bower: ['bower_components/**/*.js', 'bower_components/dist/**/*.js']
 };
 gulp.task('clean', [], function () {
     console.log("Clean all files in build folder");
@@ -51,6 +50,7 @@ gulp.task('scripts', ['clean'], function () {
         .pipe(jshint())
         .pipe(jshint.reporter('default'))
         .pipe(tsProject())
+        //.pipe(browserify())
         .pipe(concat('scripts.js'))
         .pipe(gulp.dest(bases.dist));
 });
@@ -59,6 +59,7 @@ gulp.task('service', ['clean'], function () {
     gulp.src(paths.service, {
             cwd: bases.app
         })
+        //.pipe(browserify())
         .pipe(jshint())
         .pipe(jshint.reporter('default'))
         .pipe(typescript({
@@ -71,6 +72,7 @@ gulp.task('pages', ['clean'], function () {
     gulp.src(paths.pages, {
             cwd: bases.app
         })
+        //.pipe(browserify())
         .pipe(template()) // converts html to JS
         .pipe(concat('templates.js'))
         .pipe(gulp.dest(bases.dist))
@@ -80,6 +82,7 @@ gulp.task('mainpages', ['clean'], function () {
     gulp.src(paths.mainpage, {
             cwd: bases.app
         })
+       // .pipe(browserify())
         .pipe(gulp.dest(bases.dist))
 });
 
@@ -90,6 +93,7 @@ gulp.task('imagemin', ['clean'], function () {
             cwd: bases.app
         })
         .pipe(imagemin())
+       // .pipe(browserify())
         .pipe(gulp.dest(bases.dist + 'images/'));
 });
 
@@ -100,21 +104,52 @@ gulp.task('cssmin', ['clean'], function () {
         })
         .pipe(sass())
         .pipe(cssmin())
+       // .pipe(browserify())
         .pipe(gulp.dest(bases.dist + 'styles/'));
 });
 
-gulp.task('utility',['clean'], function() {
-    gulp.src(paths.utility,  {cwd: bases.app})
-    .pipe(jsonTransform(function(data, file) {
-        return data;
-    }))
-    .pipe(gulp.dest(bases.dist + 'utility/'));
+gulp.task('utility', ['clean'], function () {
+    gulp.src(paths.utility, {
+            cwd: bases.app
+        })
+        .pipe(jsonTransform(function (data, file) {
+            return data;
+        }))
+        //.pipe(browserify())
+        .pipe(gulp.dest(bases.dist + 'utility/'));
 });
 
-gulp.task('bower',['clean'], function() {
-    gulp.src(paths.bower,  {cwd: bases.app})
-    .pipe(gulp.dest(bases.dist + 'bower_components/'));
+gulp.task('bower', ['clean'], function () {
+    gulp.src(paths.bower, {
+            cwd: bases.app
+        })
+        .pipe(gulp.dest(bases.dist + 'bower_components/'));
 });
 gulp.task('LocalDeploy', ['clean',
-    'scripts', 'service', 'pages', 'mainpages', 'imagemin', 'cssmin','utility','bower'
+    'scripts', 'service', 'pages', 'mainpages', 'imagemin', 'cssmin', 'utility', 'bower'
 ]);
+
+gulp.task("watch",['server'], function () {
+  gulp.watch(paths.scripts, ["scripts", browserSync.reload()]).on("change", reportChange);
+  gulp.watch(paths.mainpage, ["mainpage", browserSync.reload()]).on("change", reportChange);
+  gulp.watch(paths.pages, ["pages", browserSync.reload()]).on("change", reportChange);
+  gulp.watch(paths.service, ["service", browserSync.reload()]).on("change", reportChange);
+  gulp.watch(paths.styles, ["cssmin", browserSync.reload()]).on("change", reportChange);
+  gulp.watch(paths.images, ["imagemin", browserSync.reload()]).on("change", reportChange);
+  gulp.watch(paths.bower, ["bower", browserSync.reload()]).on("change", reportChange);
+});
+
+gulp.task("server", ['LocalDeploy'], function (done) {
+    browserSync.init(({
+        open: false,
+        port: 9000,
+        server: {
+            baseDir:[paths.dist]
+        }
+    }, done));
+});
+
+
+function reportChange(event) {
+    console.log("File " + event.path + " was " + event.type + ", running tasks...");
+}
